@@ -22,6 +22,7 @@ public class Option : MonoBehaviour
     public void InitializeOption(int value)
     {
         _assignedValue = value;
+        _optionText.text = _assignedValue.ToString();
     }
 
     public void MarkSelectedOption(bool correct)

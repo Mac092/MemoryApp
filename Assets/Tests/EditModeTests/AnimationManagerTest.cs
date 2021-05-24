@@ -3,16 +3,16 @@ using NUnit.Framework;
 public class AnimationManagerTest
 {
     [Test]
-    public void AnimationManagerTestSimplePasses()
+    public void TestCreateAnimationManager()
     {
         int oldAnimationBundlesArraySize = 0;
-        int newAnimnationBundleArraySize = 0;
+        int newAnimationBundleArraySize = 0;
 
         AnimationManager.InitializeAnimationManager();
         oldAnimationBundlesArraySize = AnimationManager.GetAnimationsBundleSize();
         AnimationManager.CreateAnimationBundle();
-        newAnimnationBundleArraySize = AnimationManager.GetAnimationsBundleSize();
+        newAnimationBundleArraySize = AnimationManager.GetAnimationsBundleSize();
 
-        Assert.AreEqual(oldAnimationBundlesArraySize + 1, newAnimnationBundleArraySize);
+        Assert.AreEqual(oldAnimationBundlesArraySize + 1, newAnimationBundleArraySize);
     }
 }
