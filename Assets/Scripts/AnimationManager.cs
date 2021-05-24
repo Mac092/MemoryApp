@@ -1,5 +1,5 @@
 using System;
-using UnityEngine;
+using UnityEngine.UI;
 
 public static class AnimationManager
 {
@@ -13,12 +13,35 @@ public static class AnimationManager
         _animationsBundle = new AnimationBundle[0];
     }
 
-    public static void CreateAnimationBundle()
+    public static int CreateAnimationBundle()
     {
+        int animationBundleID = 0;
         AnimationBundle animationBundle = new AnimationBundle();
 
         Array.Resize(ref _animationsBundle, _animationsBundle.Length + 1);
         _animationsBundleSize = _animationsBundle.Length;
         _animationsBundle[_animationsBundleSize - 1] = animationBundle;
+
+        animationBundleID = _animationsBundleSize - 1;
+
+        return animationBundleID;
+    }
+
+    public static void GenerateTextAnimationForAnimationBundle(int bundleID, in Text text, in TextAnimation.AnimationType animationType, in float animationDuration)
+    {
+        _animationsBundle[bundleID].AddTextAnimation(text, animationType, animationDuration);
+    }
+
+    public static void StartAnimationBundle(int bundleID)
+    {
+        _animationsBundle[bundleID].StartRunning();
+    }
+
+    public static void RunAnimationBundles(float deltaTime)
+    {
+        for (int i = 0; i < _animationsBundle.Length; i++)
+        {
+            _animationsBundle[i].RunCurrentAnimation(deltaTime);
+        }
     }
 }

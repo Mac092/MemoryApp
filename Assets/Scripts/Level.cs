@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Level : MonoBehaviour
 {
@@ -14,10 +15,12 @@ public class Level : MonoBehaviour
     private List<int> _optionsValues;
     private int _numOptions = 0;
     private int _activeOptions = 0;
-    private int _solutionValue = 0;
+    private int _solutionIndex = 0;
 
     private const int _maxValue = 9;
     private const int _minValue = 0;
+
+    private const int _levelAnimationsDurations = 2;
 
     public List<Option> GetOptions() { return _options; }
     public List<int> GetOptionsValues() { return _optionsValues; }  
@@ -30,7 +33,25 @@ public class Level : MonoBehaviour
         _options = new List<Option>();
     }
 
-    public void GenerateRandomOptions(int optionsAmount)
+    public void InitializeNewLevel(int optionsAmount)
+    {
+        GenerateRandomOptions(optionsAmount);
+        SelectRandomOptionAsSolution();
+        InstantiateGeneratedOptions();
+    }
+
+    public void StartLevel()
+    {
+        DisplaySolution();
+    }
+
+    public void OptionSelected(int selectedValue)
+    {
+        //Check if success/fail
+        //Start the corresponding success/fails animations
+    }
+
+    private void GenerateRandomOptions(int optionsAmount)
     {
         _numOptions = optionsAmount;
 
@@ -44,7 +65,12 @@ public class Level : MonoBehaviour
         }
     }
 
-    public void InstantiateGeneratedOptions()
+    private void SelectRandomOptionAsSolution()
+    {
+        _solutionIndex = Random.Range(0, _optionsValues.Count);
+    }
+
+    private void InstantiateGeneratedOptions()
     {
         for (int i = 0; i < _numOptions; i++)
         {
@@ -54,18 +80,12 @@ public class Level : MonoBehaviour
         }
     }
 
-    public void OptionSelected(int selectedValue)
-    {
-        //Check if success/fail
-        //Start the corresponding success/fails animations
-    }
-
     private bool GenerateNewRandomUniqueValue()
     {
         bool randomUniqueNumGenerated = false;
         int newOptionValue;
 
-        newOptionValue = Random.Range(_minValue, _maxValue);
+        newOptionValue = Random.Range(_minValue, _maxValue + 1);
         if (!_optionsValues.Contains(newOptionValue))
         {
             _optionsValues.Add(newOptionValue);
@@ -75,14 +95,15 @@ public class Level : MonoBehaviour
         return randomUniqueNumGenerated;
     }
 
-    private void SelectRandomOptionAsSolution()
+    public void DisplaySolution()
     {
-        //Choose randomely one option from the options list as solution
-    }
+        Text solutionText = _options[_solutionIndex].GetOptionText();
+        int solutionAnimBundleID = AnimationManager.CreateAnimationBundle();
 
-    private void DisplaySolution()
-    {
-        //Show solution on UI
+        AnimationManager.GenerateTextAnimationForAnimationBundle(solutionAnimBundleID, solutionText, Animation.AnimationType.FadeIn, _levelAnimationsDurations);
+        AnimationManager.GenerateTextAnimationForAnimationBundle(solutionAnimBundleID, solutionText, Animation.AnimationType.Static, _levelAnimationsDurations);
+        AnimationManager.GenerateTextAnimationForAnimationBundle(solutionAnimBundleID, solutionText, Animation.AnimationType.FadeOut, _levelAnimationsDurations);
+        AnimationManager.StartAnimationBundle(solutionAnimBundleID);
     }
 
     private void DisplayOptions()

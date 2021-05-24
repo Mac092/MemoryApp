@@ -14,6 +14,8 @@ public class Option : MonoBehaviour
 
     private int _assignedValue;
 
+    public Text GetOptionText() { return _optionText; }
+
     private void Awake()
     {
         _selectBtn.onClick.AddListener(OptionSelected);

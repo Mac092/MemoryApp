@@ -4,7 +4,14 @@ public class GameManager : MonoBehaviour
 {
     private void Start()
     {
-        Level.instance.GenerateRandomOptions(3);
-        Level.instance.InstantiateGeneratedOptions();
+        AnimationManager.InitializeAnimationManager();
+
+        Level.instance.InitializeNewLevel(3);
+        Level.instance.StartLevel();
+    }
+
+    private void Update()
+    {
+        AnimationManager.RunAnimationBundles(Time.deltaTime);
     }
 }

@@ -6,11 +6,14 @@ public class TextAnimation : Animation
 
     public TextAnimation(Text animationText, AnimationType animationType, float duration)
     {
-        //Assign values to class variables
+        _animationText = animationText;
+        _animationType = animationType;
+        _duration = duration;
     }
 
     protected override void RunFadeInOut()
     {
-        //Change text alpha color based on animationtype and animation current progress
+        float nextTextAlpha = CalculateNextAlphaValue();
+        _animationText.color = new UnityEngine.Color(_animationText.color.r, _animationText.color.g, _animationText.color.b, nextTextAlpha);
     }
 }

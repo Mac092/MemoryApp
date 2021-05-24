@@ -9,7 +9,7 @@ public class LevelTest
         Level level = new Level();
 
         level.Awake();
-        level.GenerateRandomOptions(levelOptionsNum);
+        //level.GenerateRandomOptions(levelOptionsNum);
 
         Assert.AreEqual(levelOptionsNum, Level.instance.GetOptionsValues().Count);
     }
@@ -21,7 +21,7 @@ public class LevelTest
         Level level = new Level();
 
         level.Awake();
-        level.GenerateRandomOptions(levelOptionsNum);
+        level.InitializeNewLevel(levelOptionsNum);
 
         Assert.AreNotEqual(Level.instance.GetOptionsValues()[0], Level.instance.GetOptionsValues()[1]);
         Assert.AreNotEqual(Level.instance.GetOptionsValues()[0], Level.instance.GetOptionsValues()[2]);

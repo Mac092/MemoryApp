@@ -6,8 +6,8 @@ public class Animation
 
     protected AnimationType _animationType;
 
-    protected float _duration;
-    protected float _elapsedTime;
+    protected float _duration = 0f;
+    protected float _elapsedTime = 0f;
 
     protected const float _maxAlpha = 1;
 
@@ -15,26 +15,54 @@ public class Animation
 
     public virtual bool RunAnimation(float deltaTime)
     {
-        //Run corresponding animation based on AnimationType
+        _elapsedTime += deltaTime;
 
-        //Check if animation completed
-        return false;
+        switch (_animationType)
+        {
+            case AnimationType.FadeIn:
+            case AnimationType.FadeOut:
+                RunFadeInOut();
+                break;
+            case AnimationType.Static:
+                RunStatic();
+                break;
+            default:
+                break;
+        }
+
+        return CheckAnimationCompleted();
     }
 
     protected virtual void RunFadeInOut()
     {
-        //Run FadeIn or Fade OutAnimation
+    }
+
+    protected virtual void RunStatic()
+    {
+
     }
 
     protected float CalculateNextAlphaValue()
     {
-        // Calculate next alpha value on Fades animations based on animation elapsed time
-        return 0;
+        float nextAlpha = 0;
+
+        if (_animationType == AnimationType.FadeIn)
+        {
+            nextAlpha = (_elapsedTime * _maxAlpha) / _duration;
+        }
+        else if (_animationType == AnimationType.FadeOut)
+            nextAlpha = _maxAlpha - ( (_elapsedTime * _maxAlpha) / _duration);
+
+        return nextAlpha;
     }
 
     protected bool CheckAnimationCompleted()
     {
-        //Check if elapsed time matches duration and so animation has finished
-        return false;
+        bool completed = false;
+
+        if (_elapsedTime >= _duration)
+            completed = true;
+
+        return completed;
     }
 }

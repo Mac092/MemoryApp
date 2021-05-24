@@ -6,12 +6,10 @@ public class AnimationBundle
     public enum AnimationBundleStatus { Initialized, Ongoing, Finished}
 
     private int _id;
-    private int _animationsAmount;
     private int _currentAnimationIndex = 0;
-
-    private AnimationBundleStatus _animationBundleStatus;
-
     private List<Animation> _animations;
+
+    private AnimationBundleStatus _animationBundleStatus = AnimationBundleStatus.Initialized;
 
     public AnimationBundle()
     {
@@ -19,18 +17,30 @@ public class AnimationBundle
         _currentAnimationIndex = 0;
     }
 
+    public void StartRunning()
+    {
+        _animationBundleStatus = AnimationBundleStatus.Ongoing;
+    }
+
     public void AddTextAnimation(in Text text, in Animation.AnimationType animationType, in float duration)
     {
-       //Create new textAnimation object and add it to the animations list
+        TextAnimation textAnimation = new TextAnimation(text, animationType, duration);
+        _animations.Add(textAnimation);
     }
 
     public void RunCurrentAnimation(float deltaTime)
     {
-       //Run current animation ande evaluate if animation finished
+        if (_animationBundleStatus == AnimationBundleStatus.Ongoing)
+        {
+            if (_animations[_currentAnimationIndex].RunAnimation(deltaTime))
+                FinishAnimation();
+        }
     }
 
     public void FinishAnimation()
     {
-        //Check if current animation was last animation or not. Pass to next animation or finish animation bundle and notify it
+        _currentAnimationIndex += 1;
+        if (_currentAnimationIndex >= _animations.Count)
+            _animationBundleStatus = AnimationBundleStatus.Finished;
     }
 }
