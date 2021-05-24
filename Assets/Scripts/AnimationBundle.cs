@@ -13,9 +13,10 @@ public class AnimationBundle
 
     private List<Animation> _animations;
 
-    public void CreateAnimationBundle()
+    public AnimationBundle()
     {
         _animations = new List<Animation>();
+        _currentAnimationIndex = 0;
     }
 
     public void AddTextAnimation(in Text text, in Animation.AnimationType animationType, in float duration)
