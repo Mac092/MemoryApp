@@ -93,35 +93,57 @@ public class Level : MonoBehaviour, Observer
         }
     }
 
-    public void OptionSelected(int selectedValue)
+    public void EvaluateSelectedOption(int selectedValue)
     {
         bool correct = false;
         Option solution = null;
 
         for (int i = 0; i < _numSolutions; i++)
         {
-            if (selectedValue == _solutions[i].GetAssignedVaue()) 
+            if (selectedValue == _solutions[i].GetAssignedVaue())
             {
                 correct = true;
                 solution = _solutions[i];
+                break;
             }
         }
 
         if (correct)
-        {
-            _options.Remove(solution);
-            _optionsValues.Remove(solution.GetAssignedVaue());
-            _numSolutions -= 1;
-            //TODO Increment success counter
-            //TODO Start the corresponding success animation
-            _levelStatus = LevelStatus.ShowingRight;
-        }
+            RightSelection(ref solution);
         else
+            WrongSelection(selectedValue);
+    }
+
+    public void RightSelection(ref Option solution)
+    {
+        solution.MarkSelectedOption(true);
+        HideAllOptions();
+        _options.Remove(solution);
+        _optionsValues.Remove(solution.GetAssignedVaue());
+        _numSolutions -= 1;
+        //TODO Increment success counter
+        _levelStatus = LevelStatus.ShowingRight;
+    }
+
+    public void WrongSelection(int selectedValue)
+    {
+        Option wrongOption = null;
+
+        for (int i = _numSolutions; i < _numOptions; i++)
         {
-            //TODO Increment fail counter
-            //TODO Start the corresponding fail animation
-            _levelStatus = LevelStatus.ShowingWrong;
+            if (selectedValue == _options[i].GetAssignedVaue())
+            {
+                wrongOption = _options[i];
+                wrongOption.MarkSelectedOption(false);
+                HideOption(wrongOption);
+                _options.Remove(wrongOption);
+                _optionsValues.Remove(wrongOption.GetAssignedVaue());
+                break;
+            }
         }
+        _numOptions -= 1;
+        _levelStatus = LevelStatus.ShowingWrong;
+        //TODO Increment fail counter
     }
 
     public void NotifyUpdate()
@@ -208,6 +230,23 @@ public class Level : MonoBehaviour, Observer
             AnimationManager.GenerateTextAnimationForAnimationBundle(optionAnimBundleID, optionText, Animation.AnimationType.FadeIn, _levelAnimationsDurations);
             AnimationManager.GenerateTextAnimationForAnimationBundle(optionAnimBundleID, optionText, Animation.AnimationType.Static, _levelAnimationsDurations);
             AnimationManager.StartAnimationBundle(optionAnimBundleID);
+        }
+    }
+
+    private void HideOption(Option option)
+    {
+        Text optionText = option.GetOptionText();
+        int optionAnimBundleID = AnimationManager.CreateAnimationBundle();
+
+        AnimationManager.GenerateTextAnimationForAnimationBundle(optionAnimBundleID, optionText, Animation.AnimationType.FadeOut, _levelAnimationsDurations);
+        AnimationManager.StartAnimationBundle(optionAnimBundleID);
+    }
+
+    private void HideAllOptions()
+    {
+        for (int i = 0; i < _numOptions; i++)
+        {
+            HideOption(_options[i]);
         }
     }
 

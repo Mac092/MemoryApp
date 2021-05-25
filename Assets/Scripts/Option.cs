@@ -35,11 +35,14 @@ public class Option : MonoBehaviour
 
     public void MarkSelectedOption(bool correct)
     {
-        //Change color for selected option based on selection success/fail
+        if (correct)
+            _optionText.color = _successColor;
+        else
+            _optionText.color = _failColor;
     }
 
     private void OptionSelected()
     {
-        Level.instance.OptionSelected(_assignedValue);
+        Level.instance.EvaluateSelectedOption(_assignedValue);
     }
 }
