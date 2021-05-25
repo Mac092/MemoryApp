@@ -6,7 +6,7 @@ public class GameManager : MonoBehaviour
     {
         AnimationManager.InitializeAnimationManager();
 
-        Level.instance.InitializeNewLevel(3);
+        Level.instance.InitializeNewLevel(3,1);
         Level.instance.StartLevel();
     }
 

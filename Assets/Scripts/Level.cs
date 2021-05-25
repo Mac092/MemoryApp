@@ -2,9 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Level : MonoBehaviour
+public class Level : MonoBehaviour, Observer
 {
     public static Level instance;
+
+    public enum LevelStatus { Initialization, ShowingSolution, ShowingOptions, OptionsSelection, ShowingWrong, ShowingRight, GameWon, GameLost}
 
     [SerializeField]
     private GameObject _optionPrefab;
@@ -12,14 +14,17 @@ public class Level : MonoBehaviour
     private RectTransform _optionsTRoot;
 
     private List<Option> _options;
+    private List<Option> _solutions;
     private List<int> _optionsValues;
     private int _numOptions = 0;
+    private int _numSolutions = 0;
     private int _activeOptions = 0;
-    private int _solutionIndex = 0;
+    private LevelStatus _levelStatus = LevelStatus.Initialization;
+
+    private int _alreadyDisplayedOptions = 0;
 
     private const int _maxValue = 9;
     private const int _minValue = 0;
-
     private const int _levelAnimationsDurations = 2;
 
     public List<Option> GetOptions() { return _options; }
@@ -31,30 +36,101 @@ public class Level : MonoBehaviour
 
         _optionsValues = new List<int>();
         _options = new List<Option>();
+        _solutions = new List<Option>();
     }
 
-    public void InitializeNewLevel(int optionsAmount)
+    public void InitializeNewLevel(int optionsAmount, int solutionsAmount)
     {
-        GenerateRandomOptions(optionsAmount);
-        SelectRandomOptionAsSolution();
-        InstantiateGeneratedOptions();
+        _numOptions = optionsAmount;
+        _numSolutions = solutionsAmount;
+
+        GenerateRandomOptionsValues();
+        GenerateSolutions();
     }
 
     public void StartLevel()
     {
         DisplaySolution();
+        MoveToNextLevelStatus();
+    }
+
+    public void MoveToNextLevelStatus()
+    {
+        switch (_levelStatus)
+        {
+            case LevelStatus.Initialization:
+                _levelStatus = LevelStatus.ShowingSolution;
+                break;
+            case LevelStatus.ShowingSolution:
+                _levelStatus = LevelStatus.ShowingOptions;
+                GenerateOtherOptionsAsideFromSolutions();
+                DisplayOptions();
+                break;
+            case LevelStatus.ShowingOptions:
+                _alreadyDisplayedOptions += 1;
+                if (_alreadyDisplayedOptions >= _numOptions)
+                {
+                    _levelStatus = LevelStatus.OptionsSelection;
+                    EnableInteractionOnOptions(true);
+                }
+                break;
+            case LevelStatus.OptionsSelection:
+                break;
+            case LevelStatus.ShowingWrong:
+                break;
+            case LevelStatus.ShowingRight:
+                if (_numSolutions == 0)
+                {
+                    //gamewon
+                }
+                break;
+            case LevelStatus.GameWon:
+                break;
+            case LevelStatus.GameLost:
+                break;
+            default:
+                break;
+        }
     }
 
     public void OptionSelected(int selectedValue)
     {
-        //Check if success/fail
-        //Start the corresponding success/fails animations
+        bool correct = false;
+        Option solution = null;
+
+        for (int i = 0; i < _numSolutions; i++)
+        {
+            if (selectedValue == _solutions[i].GetAssignedVaue()) 
+            {
+                correct = true;
+                solution = _solutions[i];
+            }
+        }
+
+        if (correct)
+        {
+            _options.Remove(solution);
+            _optionsValues.Remove(solution.GetAssignedVaue());
+            _numSolutions -= 1;
+            //TODO Increment success counter
+            //TODO Start the corresponding success animation
+            _levelStatus = LevelStatus.ShowingRight;
+        }
+        else
+        {
+            //TODO Increment fail counter
+            //TODO Start the corresponding fail animation
+            _levelStatus = LevelStatus.ShowingWrong;
+        }
     }
 
-    private void GenerateRandomOptions(int optionsAmount)
+    public void NotifyUpdate()
     {
-        _numOptions = optionsAmount;
+        MoveToNextLevelStatus();
+    }
 
+    private void GenerateRandomOptionsValues()
+    {
         for (int i = 0; i < _numOptions; i++)
         {
             bool randomUniqueValue = false;
@@ -65,19 +141,32 @@ public class Level : MonoBehaviour
         }
     }
 
-    private void SelectRandomOptionAsSolution()
+    private void GenerateOtherOptionsAsideFromSolutions()
     {
-        _solutionIndex = Random.Range(0, _optionsValues.Count);
+        for (int i = _numSolutions; i < _numOptions; i++)
+        {
+            InstantiateOption(i);
+        }
     }
 
-    private void InstantiateGeneratedOptions()
+    private void GenerateSolutions()
     {
-        for (int i = 0; i < _numOptions; i++)
+        for (int i = 0; i < _numSolutions; i++)
         {
-            GameObject optionGO = Instantiate(_optionPrefab, _optionsTRoot);
-            _options.Add(optionGO.GetComponent<Option>());
-            _options[i].InitializeOption(_optionsValues[i]);
+            InstantiateOption(i);
         }
+        _solutions = _options;
+    }
+
+    private void InstantiateOption(int optionIndex)
+    {
+        GameObject optionGO = Instantiate(_optionPrefab, _optionsTRoot);
+        _options.Add(optionGO.GetComponent<Option>());
+        _options[optionIndex].InitializeOption(_optionsValues[optionIndex]);
+
+        //Randomize display orther by randomely setting new "option" as the next sibling or as first sibling
+        if (Random.Range(0, 2) == 1)
+            _options[optionIndex].transform.SetSiblingIndex(0);       
     }
 
     private bool GenerateNewRandomUniqueValue()
@@ -95,25 +184,39 @@ public class Level : MonoBehaviour
         return randomUniqueNumGenerated;
     }
 
-    public void DisplaySolution()
+    private void DisplaySolution()
     {
-        Text solutionText = _options[_solutionIndex].GetOptionText();
-        int solutionAnimBundleID = AnimationManager.CreateAnimationBundle();
+        for (int i = 0; i < _numSolutions; i++)
+        {
+            Text solutionText = _options[i].GetOptionText();
+            int solutionAnimBundleID = AnimationManager.CreateAnimationBundle();
 
-        AnimationManager.GenerateTextAnimationForAnimationBundle(solutionAnimBundleID, solutionText, Animation.AnimationType.FadeIn, _levelAnimationsDurations);
-        AnimationManager.GenerateTextAnimationForAnimationBundle(solutionAnimBundleID, solutionText, Animation.AnimationType.Static, _levelAnimationsDurations);
-        AnimationManager.GenerateTextAnimationForAnimationBundle(solutionAnimBundleID, solutionText, Animation.AnimationType.FadeOut, _levelAnimationsDurations);
-        AnimationManager.StartAnimationBundle(solutionAnimBundleID);
+            AnimationManager.GenerateTextAnimationForAnimationBundle(solutionAnimBundleID, solutionText, Animation.AnimationType.FadeIn, _levelAnimationsDurations);
+            AnimationManager.GenerateTextAnimationForAnimationBundle(solutionAnimBundleID, solutionText, Animation.AnimationType.Static, _levelAnimationsDurations);
+            AnimationManager.GenerateTextAnimationForAnimationBundle(solutionAnimBundleID, solutionText, Animation.AnimationType.FadeOut, _levelAnimationsDurations);
+            AnimationManager.StartAnimationBundle(solutionAnimBundleID);
+        }
     }
 
     private void DisplayOptions()
     {
-        //Show all options on UI
+        for (int i = 0; i < _numOptions; i++)
+        {
+            Text optionText = _options[i].GetOptionText();
+            int optionAnimBundleID = AnimationManager.CreateAnimationBundle();
+
+            AnimationManager.GenerateTextAnimationForAnimationBundle(optionAnimBundleID, optionText, Animation.AnimationType.FadeIn, _levelAnimationsDurations);
+            AnimationManager.GenerateTextAnimationForAnimationBundle(optionAnimBundleID, optionText, Animation.AnimationType.Static, _levelAnimationsDurations);
+            AnimationManager.StartAnimationBundle(optionAnimBundleID);
+        }
     }
 
     private void EnableInteractionOnOptions(bool enable)
     {
-        //Enable or disable button interaction for the options based on request
+        for (int i = 0; i < _options.Count; i++)
+        {
+            _options[i].EnableOptionInteraction(enable);
+        }
     }
 
     private void ResetLevel()

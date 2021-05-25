@@ -18,10 +18,11 @@ public class LevelTest
     public void TestLevelOptionsUnique()
     {
         int levelOptionsNum = 9;
+        int levelSolutionsNum = 1;
         Level level = new Level();
 
         level.Awake();
-        level.InitializeNewLevel(levelOptionsNum);
+        level.InitializeNewLevel(levelOptionsNum, levelSolutionsNum);
 
         Assert.AreNotEqual(Level.instance.GetOptionsValues()[0], Level.instance.GetOptionsValues()[1]);
         Assert.AreNotEqual(Level.instance.GetOptionsValues()[0], Level.instance.GetOptionsValues()[2]);

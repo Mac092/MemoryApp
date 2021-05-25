@@ -15,6 +15,7 @@ public class Option : MonoBehaviour
     private int _assignedValue;
 
     public Text GetOptionText() { return _optionText; }
+    public int GetAssignedVaue() { return _assignedValue; }
 
     private void Awake()
     {
@@ -27,6 +28,11 @@ public class Option : MonoBehaviour
         _optionText.text = _assignedValue.ToString();
     }
 
+    public void EnableOptionInteraction(bool enable)
+    {
+        _selectBtn.enabled = enable;
+    }
+
     public void MarkSelectedOption(bool correct)
     {
         //Change color for selected option based on selection success/fail
@@ -34,6 +40,6 @@ public class Option : MonoBehaviour
 
     private void OptionSelected()
     {
-        //Select option and check success
+        Level.instance.OptionSelected(_assignedValue);
     }
 }

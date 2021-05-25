@@ -17,6 +17,7 @@ public static class AnimationManager
     {
         int animationBundleID = 0;
         AnimationBundle animationBundle = new AnimationBundle();
+        animationBundle.Subscribe(Level.instance);
 
         Array.Resize(ref _animationsBundle, _animationsBundle.Length + 1);
         _animationsBundleSize = _animationsBundle.Length;

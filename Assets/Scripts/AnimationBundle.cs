@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine.UI;
 
-public class AnimationBundle 
+public class AnimationBundle : Subject
 {
     public enum AnimationBundleStatus { Initialized, Ongoing, Finished}
 
     private int _id;
     private int _currentAnimationIndex = 0;
     private List<Animation> _animations;
+    private Subject _subject;
 
     private AnimationBundleStatus _animationBundleStatus = AnimationBundleStatus.Initialized;
 
@@ -41,6 +42,9 @@ public class AnimationBundle
     {
         _currentAnimationIndex += 1;
         if (_currentAnimationIndex >= _animations.Count)
+        {
             _animationBundleStatus = AnimationBundleStatus.Finished;
+            Notify();
+        }
     }
 }
