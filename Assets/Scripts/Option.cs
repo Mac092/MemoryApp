@@ -15,7 +15,7 @@ public class Option : MonoBehaviour
     private int _assignedValue;
 
     public Text GetOptionText() { return _optionText; }
-    public int GetAssignedVaue() { return _assignedValue; }
+    public int GetAssignedValue() { return _assignedValue; }
 
     private void Awake()
     {

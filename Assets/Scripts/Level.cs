@@ -18,8 +18,7 @@ public class Level : MonoBehaviour, Observer
     private List<int> _optionsValues;
     private int _numOptions = 0;
     private int _numSolutions = 0;
-    private int _activeOptions = 0;
-    private LevelStatus _levelStatus = LevelStatus.Initialization;
+    private LevelStatus _levelStatus;
 
     private int _alreadyDisplayedOptions = 0;
 
@@ -41,6 +40,7 @@ public class Level : MonoBehaviour, Observer
 
     public void InitializeNewLevel(int optionsAmount, int solutionsAmount)
     {
+        _levelStatus = LevelStatus.Initialization;
         _numOptions = optionsAmount;
         _numSolutions = solutionsAmount;
 
@@ -52,6 +52,13 @@ public class Level : MonoBehaviour, Observer
     {
         DisplaySolution();
         MoveToNextLevelStatus();
+    }
+
+    public void RestartLevel(int optionsAmount, int solutionsAmount)
+    {
+        ResetLevel();
+        InitializeNewLevel(optionsAmount, solutionsAmount);
+        StartLevel();
     }
 
     public void MoveToNextLevelStatus()
@@ -74,19 +81,19 @@ public class Level : MonoBehaviour, Observer
                     EnableInteractionOnOptions(true);
                 }
                 break;
-            case LevelStatus.OptionsSelection:
-                break;
             case LevelStatus.ShowingWrong:
+                    _levelStatus = LevelStatus.OptionsSelection;
+                    EnableInteractionOnOptions(true);
                 break;
             case LevelStatus.ShowingRight:
-                if (_numSolutions == 0)
-                {
-                    //gamewon
-                }
+                    _levelStatus = LevelStatus.OptionsSelection;
+                    EnableInteractionOnOptions(true); 
                 break;
             case LevelStatus.GameWon:
+                GameManager.instance.FinishGame();
                 break;
             case LevelStatus.GameLost:
+                GameManager.instance.FinishGame();
                 break;
             default:
                 break;
@@ -100,7 +107,7 @@ public class Level : MonoBehaviour, Observer
 
         for (int i = 0; i < _numSolutions; i++)
         {
-            if (selectedValue == _solutions[i].GetAssignedVaue())
+            if (selectedValue == _solutions[i].GetAssignedValue())
             {
                 correct = true;
                 solution = _solutions[i];
@@ -111,39 +118,30 @@ public class Level : MonoBehaviour, Observer
         if (correct)
             RightSelection(ref solution);
         else
-            WrongSelection(selectedValue);
+        {
+            Option wrongOption = null;
+            for (int i = _numSolutions; i < _numOptions; i++)
+            {
+                if (selectedValue == _options[i].GetAssignedValue())
+                {
+                    wrongOption = _options[i];
+                    break;
+                }
+            }
+            WrongSelection(ref wrongOption);
+        }
     }
 
     public void RightSelection(ref Option solution)
     {
         solution.MarkSelectedOption(true);
-        HideAllOptions();
-        _options.Remove(solution);
-        _optionsValues.Remove(solution.GetAssignedVaue());
-        _numSolutions -= 1;
-        //TODO Increment success counter
-        _levelStatus = LevelStatus.ShowingRight;
+        EvaluateGameWon(ref solution);
     }
 
-    public void WrongSelection(int selectedValue)
+    public void WrongSelection(ref Option wrongOption)
     {
-        Option wrongOption = null;
-
-        for (int i = _numSolutions; i < _numOptions; i++)
-        {
-            if (selectedValue == _options[i].GetAssignedVaue())
-            {
-                wrongOption = _options[i];
-                wrongOption.MarkSelectedOption(false);
-                HideOption(wrongOption);
-                _options.Remove(wrongOption);
-                _optionsValues.Remove(wrongOption.GetAssignedVaue());
-                break;
-            }
-        }
-        _numOptions -= 1;
-        _levelStatus = LevelStatus.ShowingWrong;
-        //TODO Increment fail counter
+        wrongOption.MarkSelectedOption(false);
+        EvaluateGameLost(ref wrongOption);
     }
 
     public void NotifyUpdate()
@@ -177,7 +175,7 @@ public class Level : MonoBehaviour, Observer
         {
             InstantiateOption(i);
         }
-        _solutions = _options;
+        _solutions.AddRange(_options);
     }
 
     private void InstantiateOption(int optionIndex)
@@ -244,7 +242,7 @@ public class Level : MonoBehaviour, Observer
 
     private void HideAllOptions()
     {
-        for (int i = 0; i < _numOptions; i++)
+        for (int i = 0; i < _options.Count; i++)
         {
             HideOption(_options[i]);
         }
@@ -258,13 +256,66 @@ public class Level : MonoBehaviour, Observer
         }
     }
 
+    private void MarkSolutions()
+    {
+        for (int i = 0; i < _solutions.Count; i++)
+        {
+            _solutions[i].MarkSelectedOption(true);
+        }
+    }
+
+    private void EvaluateGameWon(ref Option selectedRightOption)
+    {
+        if (_numSolutions == 1)
+        {
+            HideAllOptions();
+            _levelStatus = LevelStatus.GameWon;
+        }
+        else
+        {
+            HideOption(selectedRightOption);
+            _levelStatus = LevelStatus.ShowingRight;
+        }
+        EnableInteractionOnOptions(false);
+        _options.Remove(selectedRightOption);
+        _solutions.Remove(selectedRightOption);
+        _optionsValues.Remove(selectedRightOption.GetAssignedValue());
+        _numSolutions -= 1;
+    }
+
+    private void EvaluateGameLost(ref Option selectedWrongOption)
+    {      
+        if (_numOptions == _numSolutions + 1)
+        {
+            HideAllOptions();
+            MarkSolutions();
+            _levelStatus = LevelStatus.GameLost;
+        }
+        else
+        {
+            HideOption(selectedWrongOption);
+            _levelStatus = LevelStatus.ShowingWrong;
+        }
+        EnableInteractionOnOptions(false);
+        _options.Remove(selectedWrongOption);
+        _optionsValues.Remove(selectedWrongOption.GetAssignedValue());
+        _numOptions -= 1;
+    }
+
     private void ResetLevel()
     {
-        //Clean and reset variables and values for a new level
+        DestroyOptions();
+        _alreadyDisplayedOptions = 0;
+        _options.Clear();
+        _optionsValues.Clear();
+        _solutions.Clear();
     }
 
     private void DestroyOptions()
     {
-        //Destroy options prefabs isntances
+        for (int i = 0; i < _optionsTRoot.childCount; i++)
+        {
+            Destroy(_optionsTRoot.GetChild(i).gameObject);
+        }
     }
 }

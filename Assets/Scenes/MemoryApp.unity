@@ -245,6 +245,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8d79737bf55ac24daf24526d4a7e5af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _infiniteGame: 1
 --- !u!4 &592825052
 Transform:
   m_ObjectHideFlags: 0
@@ -419,6 +420,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Level
+      objectReference: {fileID: 0}
+    - target: {fileID: 5027584579306583036, guid: fb3b749ba1aaa0447bb302aad7036ffe,
+        type: 3}
+      propertyPath: _infiniteLevel
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5027584579306583037, guid: fb3b749ba1aaa0447bb302aad7036ffe,
         type: 3}

@@ -45,4 +45,9 @@ public static class AnimationManager
             _animationsBundle[i].RunCurrentAnimation(deltaTime);
         }
     }
+
+    public static void RestartAnimationManager()
+    {
+        InitializeAnimationManager();
+    }
 }

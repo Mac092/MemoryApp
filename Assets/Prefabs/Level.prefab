@@ -47,6 +47,7 @@ MonoBehaviour:
   _optionPrefab: {fileID: 715445340195855388, guid: 213dd20ac43b85341972dacfa3522961,
     type: 3}
   _optionsTRoot: {fileID: 5027584579932640170}
+  _infinitePlay: 1
 --- !u!1 &5027584579932640169
 GameObject:
   m_ObjectHideFlags: 0
