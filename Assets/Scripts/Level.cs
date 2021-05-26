@@ -12,6 +12,8 @@ public class Level : MonoBehaviour, Observer
     private GameObject _optionPrefab;
     [SerializeField]
     private RectTransform _optionsTRoot;
+    [SerializeField]
+    private LevelVisuals _levelVisuals;
 
     private List<Option> _options;
     private List<Option> _solutions;
@@ -20,7 +22,8 @@ public class Level : MonoBehaviour, Observer
     private int _numSolutions = 0;
     private LevelStatus _levelStatus;
     private int _alreadyDisplayedOptions = 0;
-    private LevelVisuals _levelVisuals = null;
+    private int _numFails = 0;
+    private int _numSuccess = 0;
 
     private const int _maxValue = 9;
     private const int _minValue = 0;
@@ -35,7 +38,6 @@ public class Level : MonoBehaviour, Observer
         _optionsValues = new List<int>();
         _options = new List<Option>();
         _solutions = new List<Option>();
-        _levelVisuals = new LevelVisuals();
     }
 
     public void InitializeNewLevel(int optionsAmount, int solutionsAmount)
@@ -43,6 +45,8 @@ public class Level : MonoBehaviour, Observer
         _levelStatus = LevelStatus.Initialization;
         _numOptions = optionsAmount;
         _numSolutions = solutionsAmount;
+
+        _levelVisuals.Initialize();
 
         GenerateRandomOptionsValues();
         GenerateSolutions();
@@ -134,12 +138,16 @@ public class Level : MonoBehaviour, Observer
 
     public void RightSelection(ref Option solution)
     {
+        _numSuccess += 1;
+        _levelVisuals.UpdateSuccessScore(_numSuccess.ToString());
         solution.MarkSelectedOption(true);
         EvaluateGameWon(ref solution);
     }
 
     public void WrongSelection(ref Option wrongOption)
     {
+        _numFails += 1;
+        _levelVisuals.UpdateFailsScore(_numFails.ToString());
         wrongOption.MarkSelectedOption(false);
         EvaluateGameLost(ref wrongOption);
     }
