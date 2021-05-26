@@ -19,12 +19,11 @@ public class Level : MonoBehaviour, Observer
     private int _numOptions = 0;
     private int _numSolutions = 0;
     private LevelStatus _levelStatus;
-
     private int _alreadyDisplayedOptions = 0;
+    private LevelVisuals _levelVisuals = null;
 
     private const int _maxValue = 9;
     private const int _minValue = 0;
-    private const int _levelAnimationsDurations = 2;
 
     public List<Option> GetOptions() { return _options; }
     public List<int> GetOptionsValues() { return _optionsValues; }  
@@ -36,6 +35,7 @@ public class Level : MonoBehaviour, Observer
         _optionsValues = new List<int>();
         _options = new List<Option>();
         _solutions = new List<Option>();
+        _levelVisuals = new LevelVisuals();
     }
 
     public void InitializeNewLevel(int optionsAmount, int solutionsAmount)
@@ -50,7 +50,7 @@ public class Level : MonoBehaviour, Observer
 
     public void StartLevel()
     {
-        DisplaySolution();
+        _levelVisuals.DisplaySolution(_options);
         MoveToNextLevelStatus();
     }
 
@@ -71,7 +71,7 @@ public class Level : MonoBehaviour, Observer
             case LevelStatus.ShowingSolution:
                 _levelStatus = LevelStatus.ShowingOptions;
                 GenerateOtherOptionsAsideFromSolutions();
-                DisplayOptions();
+                _levelVisuals.DisplayOptions(_options);
                 break;
             case LevelStatus.ShowingOptions:
                 _alreadyDisplayedOptions += 1;
@@ -204,50 +204,6 @@ public class Level : MonoBehaviour, Observer
         return randomUniqueNumGenerated;
     }
 
-    private void DisplaySolution()
-    {
-        for (int i = 0; i < _numSolutions; i++)
-        {
-            Text solutionText = _options[i].GetOptionText();
-            int solutionAnimBundleID = AnimationManager.CreateAnimationBundle();
-
-            AnimationManager.GenerateTextAnimationForAnimationBundle(solutionAnimBundleID, solutionText, Animation.AnimationType.FadeIn, _levelAnimationsDurations);
-            AnimationManager.GenerateTextAnimationForAnimationBundle(solutionAnimBundleID, solutionText, Animation.AnimationType.Static, _levelAnimationsDurations);
-            AnimationManager.GenerateTextAnimationForAnimationBundle(solutionAnimBundleID, solutionText, Animation.AnimationType.FadeOut, _levelAnimationsDurations);
-            AnimationManager.StartAnimationBundle(solutionAnimBundleID);
-        }
-    }
-
-    private void DisplayOptions()
-    {
-        for (int i = 0; i < _numOptions; i++)
-        {
-            Text optionText = _options[i].GetOptionText();
-            int optionAnimBundleID = AnimationManager.CreateAnimationBundle();
-
-            AnimationManager.GenerateTextAnimationForAnimationBundle(optionAnimBundleID, optionText, Animation.AnimationType.FadeIn, _levelAnimationsDurations);
-            AnimationManager.GenerateTextAnimationForAnimationBundle(optionAnimBundleID, optionText, Animation.AnimationType.Static, _levelAnimationsDurations);
-            AnimationManager.StartAnimationBundle(optionAnimBundleID);
-        }
-    }
-
-    private void HideOption(Option option)
-    {
-        Text optionText = option.GetOptionText();
-        int optionAnimBundleID = AnimationManager.CreateAnimationBundle();
-
-        AnimationManager.GenerateTextAnimationForAnimationBundle(optionAnimBundleID, optionText, Animation.AnimationType.FadeOut, _levelAnimationsDurations);
-        AnimationManager.StartAnimationBundle(optionAnimBundleID);
-    }
-
-    private void HideAllOptions()
-    {
-        for (int i = 0; i < _options.Count; i++)
-        {
-            HideOption(_options[i]);
-        }
-    }
-
     private void EnableInteractionOnOptions(bool enable)
     {
         for (int i = 0; i < _options.Count; i++)
@@ -256,24 +212,16 @@ public class Level : MonoBehaviour, Observer
         }
     }
 
-    private void MarkSolutions()
-    {
-        for (int i = 0; i < _solutions.Count; i++)
-        {
-            _solutions[i].MarkSelectedOption(true);
-        }
-    }
-
     private void EvaluateGameWon(ref Option selectedRightOption)
     {
         if (_numSolutions == 1)
         {
-            HideAllOptions();
+            _levelVisuals.HideAllOptions(_options);
             _levelStatus = LevelStatus.GameWon;
         }
         else
         {
-            HideOption(selectedRightOption);
+            _levelVisuals.HideOption(selectedRightOption);
             _levelStatus = LevelStatus.ShowingRight;
         }
         EnableInteractionOnOptions(false);
@@ -287,13 +235,13 @@ public class Level : MonoBehaviour, Observer
     {      
         if (_numOptions == _numSolutions + 1)
         {
-            HideAllOptions();
-            MarkSolutions();
+            _levelVisuals.HideAllOptions(_options);
+            _levelVisuals.MarkSolutions(_solutions);
             _levelStatus = LevelStatus.GameLost;
         }
         else
         {
-            HideOption(selectedWrongOption);
+            _levelVisuals.HideOption(selectedWrongOption);
             _levelStatus = LevelStatus.ShowingWrong;
         }
         EnableInteractionOnOptions(false);
