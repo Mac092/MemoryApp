@@ -31,6 +31,7 @@ public class Option : MonoBehaviour
     public void EnableOptionInteraction(bool enable)
     {
         _selectBtn.enabled = enable;
+        _selectBtn.GetComponent<Image>().enabled = enable;
     }
 
     public void MarkSelectedOption(bool correct)
